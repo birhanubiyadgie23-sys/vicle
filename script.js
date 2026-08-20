@@ -163,34 +163,128 @@ async function renderStaffRequests() {
     });
 }
 
+// --- መስመር 124 እስከ 137 በነዚህ ይተካሉ ---
+
 async function renderDeptApproval() {
     const tbody = document.getElementById('deptApprovalTable');
     if (!tbody) return;
-    const { data: requests } = await _supabase.from('vehicle_requests').select('*');
+
+    // ዳይሬክተሩ የራሱን ዳይሬክቶሬት ጥያቄዎች ብቻ እንዲያይ (አድሚን ከሆነ ግን ሁሉንም ያያል)
+    let query = _supabase.from('vehicle_requests').select('*');
+    if (currentProfile && currentProfile.role === 'dept' && currentProfile.department) {
+        query = query.eq('department', currentProfile.department);
+    }
+
+    const { data: requests } = await query;
     tbody.innerHTML = '';
+
     (requests || []).forEach(r => {
-        tbody.innerHTML += `<tr><td><b>${r.staff_name}</b></td><td>${r.department}</td><td>${r.destination}</td><td>${r.reason}</td><td><span class="badge">${r.dept_status}</span></td><td>${r.assigned_driver || '-'}</td><td><button class="btn-success" onclick="updateDeptApproval('${r.id}', 'Approved')">አጽድቅ</button></td></tr>`;
+        let actionButtons = '';
+
+        // ጥያቄው Pending ከሆነ ማጽደቂያና ውድቅ ማድረጊያ ቁልፎች ይወጣሉ
+        if (r.dept_status === 'Pending') {
+            actionButtons = `
+                <button class="btn-success" onclick="updateDeptApproval('${r.id}', 'Approved')" style="margin-right: 5px;">አጽድቅ</button>
+                <button class="btn-danger" onclick="updateDeptApproval('${r.id}', 'Rejected')" style="background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">ውድቅ አድርግ</button>
+            `;
+        } else if (r.dept_status === 'Approved') {
+            actionButtons = `<span class="badge badge-active" style="color: green; font-weight: bold;">ጽድቋል</span>`;
+        } else {
+            actionButtons = `<span class="badge badge-garage" style="color: red; font-weight: bold;">ውድቅ ተደርጓል</span>`;
+        }
+
+        tbody.innerHTML += `
+            <tr>
+                <td><b>${r.staff_name}</b></td>
+                <td>${r.department}</td>
+                <td>${r.destination}</td>
+                <td>${r.reason}</td>
+                <td><span class="badge">${r.dept_status}</span></td>
+                <td>${actionButtons}</td>
+            </tr>`;
     });
 }
 
 async function updateDeptApproval(id, status) {
-    await _supabase.from('vehicle_requests').update({ dept_status: status }).eq('id', id);
-    renderAllTables();
+    const confirmMsg = status === 'Approved'
+        ? 'ይህንን የተሽከርካሪ ጥያቄ ማጽደቅ ይፈልጋሉ?'
+        : 'ይህንን የተሽከርካሪ ጥያቄ ውድቅ ማድረግ ይፈልጋሉ?';
+
+    if (!confirm(confirmMsg)) return;
+
+    const { error } = await _supabase
+        .from('vehicle_requests')
+        .update({
+            dept_status: status,
+            // ውድቅ ከተደረገ የአድሚኑንም status አብሮ ውድቅ ያደርገዋል
+            admin_status: status === 'Rejected' ? 'Rejected' : 'Pending'
+        })
+        .eq('id', id);
+
+    if (error) {
+        alert('ስህተት ተፈጥሯል: ' + error.message);
+    } else {
+        alert(status === 'Approved' ? 'ጥያቄው በተሳካ ሁኔታ ጸድቋል!' : 'ጥያቄው ውድቅ ተደርጓል!');
+        renderAllTables();
+    }
 }
 
+// 1. Admin Table ላይ ማጽደቂያ ቁልፉ የሚታየው ዳይሬክተሩ (Dept) ካጸደቀው ብቻ ነው
 async function renderAdminDispatch() {
     const tbody = document.getElementById('adminDispatchTable');
     if (!tbody) return;
     const { data: requests } = await _supabase.from('vehicle_requests').select('*');
     tbody.innerHTML = '';
+
     (requests || []).forEach(r => {
-        tbody.innerHTML += `<tr><td><b>${r.staff_name}</b></td><td>${r.department}</td><td>${r.destination}</td><td>${r.dept_status}</td><td><button class="btn-success" onclick="updateAdminDispatch('${r.id}', 'Approved')">አጽድቅ</button></td><td>${r.assigned_driver || 'አልተመደበም'}</td></tr>`;
+        // ዳይሬክተሩ ያጸደቀው መሆኑን ማረጋገጫ
+        const isDeptApproved = r.dept_status === 'Approved';
+
+        let actionButton = '';
+        if (isDeptApproved) {
+            actionButton = `<button class="btn-success" onclick="updateAdminDispatch('${r.id}', 'Approved')">አጽድቅ</button>`;
+        } else {
+            actionButton = `<span class="badge badge-garage" style="color: red;">የዳይሬክተር ውሳኔ ይጠበቃል</span>`;
+        }
+
+        tbody.innerHTML += `
+            <tr>
+                <td><b>${r.staff_name}</b></td>
+                <td>${r.department}</td>
+                <td>${r.destination}</td>
+                <td><span class="badge">${r.dept_status}</span></td>
+                <td>${actionButton}</td>
+                <td>${r.assigned_driver || 'አልተመደበም'}</td>
+            </tr>`;
     });
 }
 
+// 2. በድገጣ እንኳን ቢጫነው ዳይሬክተሩ ካላጸደቀው አድሚኑ ማጽደቅ እንዳይችል መከልከል
 async function updateAdminDispatch(id, status) {
-    await _supabase.from('vehicle_requests').update({ admin_status: status }).eq('id', id);
-    renderAllTables();
+    // አስቀድሞ ጥያቄውን ከዳታቤዝ መፈተሽ
+    const { data: request } = await _supabase
+        .from('vehicle_requests')
+        .select('dept_status')
+        .eq('id', id)
+        .single();
+
+    if (!request || request.dept_status !== 'Approved') {
+        alert('ስህተት፦ ይህ ጥያቄ በቅድሚያ በዳይሬክተሩ (Dept) መጽደቅ አለበት!');
+        return;
+    }
+
+    // ዳይሬክተሩ ካጸደቀው ብቻ Admin እንዲያጸድቅ መፍቀድ
+    const { error } = await _supabase
+        .from('vehicle_requests')
+        .update({ admin_status: status })
+        .eq('id', id);
+
+    if (error) {
+        alert('ስህተት ተፈጥሯል: ' + error.message);
+    } else {
+        alert('ጥያቄው በኤስሚኑ በተሳካ ሁኔታ ጸድቋል!');
+        renderAllTables();
+    }
 }
 
 async function renderDriverAccept() {
