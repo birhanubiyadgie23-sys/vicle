@@ -8,6 +8,10 @@ const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 let currentProfile = null;
 
+// ለውድቅ ማድረጊያ Modal የሚያገለግሉ ግሎባል ተለዋዋጮች
+let pendingRejectId = null;
+let pendingRejectType = null; // 'dept' ወይም 'admin'
+
 async function handleLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPass').value.trim();
@@ -17,7 +21,6 @@ async function handleLogin() {
         return;
     }
 
-    // መደበኛ የሱፓቤስ Auth መግቢያ
     const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
     if (error) {
         alert('የመግቢያ ስህተት: ' + error.message);
@@ -29,11 +32,9 @@ async function handleLogin() {
     initSession();
 }
 
-// 406 Error እንዳይፈጥር በጥንቃቄ የተስተካከለ የ Profile መፈለጊያ
 async function fetchUserProfile() {
     if (!currentUser) return;
 
-    // 406 Error ለማስቀረት array በመቀበል የመጀመሪያውን እንወስዳለን
     const { data, error } = await _supabase
         .from('users')
         .select('*')
@@ -42,7 +43,6 @@ async function fetchUserProfile() {
     if (data && data.length > 0) {
         currentProfile = data[0];
     } else {
-        // ፕሮፋይል ካልተገኘ በኢሜይል ፈልጎ ማረጋገጥ
         const { data: emailData } = await _supabase
             .from('users')
             .select('*')
@@ -50,10 +50,8 @@ async function fetchUserProfile() {
 
         if (emailData && emailData.length > 0) {
             currentProfile = emailData[0];
-            // user_id ካልተያያዘ ማያያዝ
             await _supabase.from('users').update({ user_id: currentUser.id }).eq('id', currentProfile.id);
         } else {
-            // በጭራሽ ካልተገኘ ነባሪ ፕሮፋይል ማዘጋጀት
             currentProfile = { full_name: currentUser.email, role: 'staff', department: '' };
         }
     }
@@ -159,17 +157,15 @@ async function renderStaffRequests() {
     const { data: requests } = await query;
     tbody.innerHTML = '';
     (requests || []).forEach(r => {
-        tbody.innerHTML += `<tr><td><b>${r.department}</b></td><td>${r.destination}</td><td>${r.reason}</td><td>${r.date}</td><td><span class="badge ${r.dept_status === 'Approved' ? 'badge-active' : 'badge-garage'}">${r.dept_status}</span></td><td><span class="badge ${r.admin_status === 'Approved' ? 'badge-active' : 'badge-garage'}">${r.admin_status}</span></td></tr>`;
+        const rejectionNote = r.rejection_reason ? `<br><small style="color: #ff6b6b;">ምክንያት፦ ${r.rejection_reason}</small>` : '';
+        tbody.innerHTML += `<tr><td><b>${r.department}</b></td><td>${r.destination}</td><td>${r.reason}</td><td>${r.date}</td><td><span class="badge ${r.dept_status === 'Approved' ? 'badge-active' : 'badge-garage'}">${r.dept_status}</span></td><td><span class="badge ${r.admin_status === 'Approved' ? 'badge-active' : 'badge-garage'}">${r.admin_status}</span>${rejectionNote}</td></tr>`;
     });
 }
-
-// --- መስመር 124 እስከ 137 በነዚህ ይተካሉ ---
 
 async function renderDeptApproval() {
     const tbody = document.getElementById('deptApprovalTable');
     if (!tbody) return;
 
-    // ዳይሬክተሩ የራሱን ዳይሬክቶሬት ጥያቄዎች ብቻ እንዲያይ (አድሚን ከሆነ ግን ሁሉንም ያያል)
     let query = _supabase.from('vehicle_requests').select('*');
     if (currentProfile && currentProfile.role === 'dept' && currentProfile.department) {
         query = query.eq('department', currentProfile.department);
@@ -180,8 +176,6 @@ async function renderDeptApproval() {
 
     (requests || []).forEach(r => {
         let actionButtons = '';
-
-        // ጥያቄው Pending ከሆነ ማጽደቂያና ውድቅ ማድረጊያ ቁልፎች ይወጣሉ
         if (r.dept_status === 'Pending') {
             actionButtons = `
                 <button class="btn-success" onclick="updateDeptApproval('${r.id}', 'Approved')" style="margin-right: 5px;">አጽድቅ</button>
@@ -190,7 +184,8 @@ async function renderDeptApproval() {
         } else if (r.dept_status === 'Approved') {
             actionButtons = `<span class="badge badge-active" style="color: green; font-weight: bold;">ጽድቋል</span>`;
         } else {
-            actionButtons = `<span class="badge badge-garage" style="color: red; font-weight: bold;">ውድቅ ተደርጓል</span>`;
+            const reasonText = r.rejection_reason ? `<br><small style="color: red;">(${r.rejection_reason})</small>` : '';
+            actionButtons = `<span class="badge badge-garage" style="color: red; font-weight: bold;">ውድቅ ተደርጓል</span>${reasonText}`;
         }
 
         tbody.innerHTML += `
@@ -205,46 +200,72 @@ async function renderDeptApproval() {
     });
 }
 
+// የዳይሬክተር Approval/Reject (Modal በመጠቀም)
 async function updateDeptApproval(id, status) {
-    const confirmMsg = status === 'Approved'
-        ? 'ይህንን የተሽከርካሪ ጥያቄ ማጽደቅ ይፈልጋሉ?'
-        : 'ይህንን የተሽከርካሪ ጥያቄ ውድቅ ማድረግ ይፈልጋሉ?';
-
-    if (!confirm(confirmMsg)) return;
-
-    const { error } = await _supabase
-        .from('vehicle_requests')
-        .update({
-            dept_status: status,
-            // ውድቅ ከተደረገ የአድሚኑንም status አብሮ ውድቅ ያደርገዋል
-            admin_status: status === 'Rejected' ? 'Rejected' : 'Pending'
-        })
-        .eq('id', id);
-
-    if (error) {
-        alert('ስህተት ተፈጥሯል: ' + error.message);
+    if (status === 'Rejected') {
+        pendingRejectId = id;
+        pendingRejectType = 'dept';
+        document.getElementById('rejectionReasonText').value = '';
+        document.getElementById('rejectionModal').style.display = 'flex';
     } else {
-        alert(status === 'Approved' ? 'ጥያቄው በተሳካ ሁኔታ ጸድቋል!' : 'ጥያቄው ውድቅ ተደርጓል!');
-        renderAllTables();
+        if (!confirm('ይህንን የተሽከርካሪ ጥያቄ ማጽደቅ ይፈልጋሉ?')) return;
+
+        const { error } = await _supabase
+            .from('vehicle_requests')
+            .update({ dept_status: 'Approved', admin_status: 'Pending' })
+            .eq('id', id);
+
+        if (error) {
+            alert('ስህተት ተፈጥሯል: ' + error.message);
+        } else {
+            alert('ጥያቄው በተሳካ ሁኔታ ጸድቋል!');
+            renderAllTables();
+        }
     }
 }
 
-// 1. Admin Table ላይ ማጽደቂያ ቁልፉ የሚታየው ዳይሬክተሩ (Dept) ካጸደቀው ብቻ ነው
 async function renderAdminDispatch() {
     const tbody = document.getElementById('adminDispatchTable');
     if (!tbody) return;
+
     const { data: requests } = await _supabase.from('vehicle_requests').select('*');
+    const { data: cars } = await _supabase.from('cars').select('*');
+
     tbody.innerHTML = '';
 
     (requests || []).forEach(r => {
-        // ዳይሬክተሩ ያጸደቀው መሆኑን ማረጋገጫ
         const isDeptApproved = r.dept_status === 'Approved';
 
-        let actionButton = '';
-        if (isDeptApproved) {
-            actionButton = `<button class="btn-success" onclick="updateAdminDispatch('${r.id}', 'Approved')">አጽድቅ</button>`;
+        let actionButtons = '';
+        if (!isDeptApproved) {
+            actionButtons = `<span class="badge badge-garage" style="color: #ff4d4d;">የዳይሬክተር ውሳኔ ይጠበቃል</span>`;
+        } else if (r.admin_status === 'Approved') {
+            actionButtons = `<span class="badge badge-active" style="color: #00ff88; font-weight: bold;">ጽድቋል</span>`;
+        } else if (r.admin_status === 'Rejected') {
+            const reasonText = r.rejection_reason ? `<br><small style="color: #ff4d4d;">(${r.rejection_reason})</small>` : '';
+            actionButtons = `<span class="badge badge-garage" style="color: #ff4d4d; font-weight: bold;">ውድቅ ተደርጓል</span>${reasonText}`;
         } else {
-            actionButton = `<span class="badge badge-garage" style="color: red;">የዳይሬክተር ውሳኔ ይጠበቃል</span>`;
+            actionButtons = `
+                <button class="btn-success" onclick="updateAdminDispatch('${r.id}', 'Approved')" style="margin-right: 5px;">አጽድቅ</button>
+                <button class="btn-danger" onclick="updateAdminDispatch('${r.id}', 'Rejected')" style="background-color: #dc3545; color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer;">ውድቅ አድርግ</button>
+            `;
+        }
+
+        let driverSelectOptions = `<option value="">-- አሽከርካሪ ይምረጡ --</option>`;
+        (cars || []).forEach(c => {
+            const selected = (r.assigned_driver === c.driver) ? 'selected' : '';
+            driverSelectOptions += `<option value="${c.driver}" ${selected}>${c.driver} (${c.car})</option>`;
+        });
+
+        let driverDropdown = '';
+        if (r.admin_status === 'Approved') {
+            driverDropdown = `
+                <select onchange="assignDriver('${r.id}', this.value)" style="padding: 5px; border-radius: 4px; background: #1a233a; color: white; border: 1px solid #2e3d63;">
+                    ${driverSelectOptions}
+                </select>
+            `;
+        } else {
+            driverDropdown = `<span style="color: #888;">${r.assigned_driver || 'አልተመደቡም'}</span>`;
         }
 
         tbody.innerHTML += `
@@ -253,36 +274,95 @@ async function renderAdminDispatch() {
                 <td>${r.department}</td>
                 <td>${r.destination}</td>
                 <td><span class="badge">${r.dept_status}</span></td>
-                <td>${actionButton}</td>
-                <td>${r.assigned_driver || 'አልተመደበም'}</td>
+                <td>${actionButtons}</td>
+                <td>${driverDropdown}</td>
             </tr>`;
     });
 }
 
-// 2. በድገጣ እንኳን ቢጫነው ዳይሬክተሩ ካላጸደቀው አድሚኑ ማጽደቅ እንዳይችል መከልከል
+// የአድሚን Approval/Reject (Modal በመጠቀም)
 async function updateAdminDispatch(id, status) {
-    // አስቀድሞ ጥያቄውን ከዳታቤዝ መፈተሽ
-    const { data: request } = await _supabase
-        .from('vehicle_requests')
-        .select('dept_status')
-        .eq('id', id)
-        .single();
+    const { data: request } = await _supabase.from('vehicle_requests').select('dept_status').eq('id', id).single();
 
     if (!request || request.dept_status !== 'Approved') {
         alert('ስህተት፦ ይህ ጥያቄ በቅድሚያ በዳይሬክተሩ (Dept) መጽደቅ አለበት!');
         return;
     }
 
-    // ዳይሬክተሩ ካጸደቀው ብቻ Admin እንዲያጸድቅ መፍቀድ
+    if (status === 'Rejected') {
+        pendingRejectId = id;
+        pendingRejectType = 'admin';
+        document.getElementById('rejectionReasonText').value = '';
+        document.getElementById('rejectionModal').style.display = 'flex';
+    } else {
+        if (!confirm('ይህንን ጥያቄ ማጽደቅ ይፈልጋሉ?')) return;
+
+        const { error } = await _supabase
+            .from('vehicle_requests')
+            .update({ admin_status: 'Approved' })
+            .eq('id', id);
+
+        if (error) {
+            alert('ስህተት ተፈጥሯል: ' + error.message);
+        } else {
+            alert('ጥያቄው በስኬት ጸድቋል!');
+            renderAllTables();
+        }
+    }
+}
+
+// ውድቅ ማድረጊያውን በግዴታ (Force Validation) መዝጋቢ ተግባር
+async function submitRejectionForce() {
+    const reasonInput = document.getElementById('rejectionReasonText').value.trim();
+
+    if (!reasonInput) {
+        alert('እባክዎ ውድቅ ያደረጉበትን ምክንያት ሳይፅፉ ማለፍ አይችሉም!');
+        return;
+    }
+
+    const updateData = {
+        rejection_reason: reasonInput
+    };
+
+    if (pendingRejectType === 'dept') {
+        updateData.dept_status = 'Rejected';
+        updateData.admin_status = 'Rejected';
+    } else if (pendingRejectType === 'admin') {
+        updateData.admin_status = 'Rejected';
+    }
+
     const { error } = await _supabase
         .from('vehicle_requests')
-        .update({ admin_status: status })
-        .eq('id', id);
+        .update(updateData)
+        .eq('id', pendingRejectId);
 
     if (error) {
         alert('ስህተት ተፈጥሯል: ' + error.message);
     } else {
-        alert('ጥያቄው በኤስሚኑ በተሳካ ሁኔታ ጸድቋል!');
+        alert('ጥያቄው ውድቅ ተደርጓል!');
+        closeRejectionModal();
+        renderAllTables();
+    }
+}
+
+function closeRejectionModal() {
+    document.getElementById('rejectionModal').style.display = 'none';
+    pendingRejectId = null;
+    pendingRejectType = null;
+}
+
+async function assignDriver(requestId, driverName) {
+    if (!driverName) return;
+
+    const { error } = await _supabase
+        .from('vehicle_requests')
+        .update({ assigned_driver: driverName, driver_status: 'Assigned' })
+        .eq('id', requestId);
+
+    if (error) {
+        alert('አሽከርካሪ መመደብ አልተቻለም: ' + error.message);
+    } else {
+        alert('አሽከርካሪ በተሳካ ሁኔታ ተመድቧል!');
         renderAllTables();
     }
 }
@@ -417,13 +497,11 @@ async function registerSystemAccount() {
         return;
     }
 
-    // የይለፍ ቃል ቢያንስ 6 ፊደል መሆኑን ማረጋገጥ
     if (password.length < 6) {
         alert('የይለፍ ቃል ቢያንስ 6 ፊደላት/ቁጥሮች መሆን አለበት!');
         return;
     }
 
-    // አዲስ ተጠቃሚ በ Auth መፍጠር
     const { data, error } = await _supabase.auth.signUp({
         email: email,
         password: password
@@ -435,7 +513,6 @@ async function registerSystemAccount() {
     }
 
     if (data.user) {
-        // በ users ሰንጠረዥ ውስጥ ፕሮፋይል ማስገባት
         const { error: dbError } = await _supabase.from('users').insert([{
             user_id: data.user.id,
             full_name: fullName,
@@ -447,7 +524,6 @@ async function registerSystemAccount() {
             alert('በ Database ላይ መመዝገብ አልተቻለም: ' + dbError.message);
         } else {
             alert('አካውንት በተሳካ ሁኔታ ተፈጥሯል!');
-            // ፎርሙን ማጽዳት
             document.getElementById('newAccEmail').value = '';
             document.getElementById('newAccPassword').value = '';
             document.getElementById('newAccFullName').value = '';

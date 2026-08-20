@@ -22,7 +22,8 @@
                 <input type="email" id="loginEmail" placeholder="Email ያስገቡ">
             </div>
             <div style="margin-bottom: 20px;">
-                <label style="font-size: 12px; color: #94a3b8; display: block; margin-bottom: 5px;">የሚስጥር ቁጥር (Password)</label>
+                <label style="font-size: 12px; color: #94a3b8; display: block; margin-bottom: 5px;">የሚስጥር ቁጥር
+                    (Password)</label>
                 <input type="password" id="loginPass" placeholder="Password ያስገቡ">
             </div>
             <button onclick="handleLogin()" style="width: 100%;">ግባ (Login)</button>
@@ -32,12 +33,15 @@
     <!-- Generic Popup Modal -->
     <div id="genericModal" class="custom-modal">
         <div class="custom-modal-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px;">
                 <div style="color: #38bdf8; font-size: 16px; font-weight: bold;" id="modalTitle">ርዕስ</div>
-                <button onclick="closeGenericModal()" style="background:none; border:none; color:#fff; cursor:pointer; font-size:16px; box-shadow:none;">✕</button>
+                <button onclick="closeGenericModal()"
+                    style="background:none; border:none; color:#fff; cursor:pointer; font-size:16px; box-shadow:none;">✕</button>
             </div>
             <div style="color: #cbd5e1; font-size: 13px; line-height: 1.6;" id="modalBody">ይዘት እዚህ ይገባል...</div>
-            <button onclick="closeGenericModal()" style="align-self: flex-end; padding: 6px 15px; font-size: 12px;">ዝጋ</button>
+            <button onclick="closeGenericModal()"
+                style="align-self: flex-end; padding: 6px 15px; font-size: 12px;">ዝጋ</button>
         </div>
     </div>
 
@@ -46,17 +50,28 @@
         <aside id="sidebarNav">
             <div class="sidebar-brand">🚗 E-Fleet</div>
             <button class="nav-item active" onclick="switchTab('dashboard', this)">📊 ዳሽቦርድ</button>
-            <button class="nav-item" onclick="switchTab('staffReq', this)" id="sidebarStaffReq">📋 የተሽከርካሪ ጥያቄዎች</button>
-            <button class="nav-item" onclick="switchTab('deptApp', this)" id="navDeptApp" style="display:none;"><span id="menuTextDeptApp">✔️ የዳይሬክቶሬት ማጽደቂያ</span></button>
-            <button class="nav-item" onclick="switchTab('adminDisp', this)" id="navAdminDisp" style="display:none;"><span id="menuTextAdminDisp">⚙️ የአድሚን ስምሪት</span></button>
-            <button class="nav-item" onclick="switchTab('driverAcc', this)" id="navDriverAcc" style="display:none;">🚗 የአሽከርካሪ ስምሪት ሁኔታ</button>
-            <button class="nav-item" onclick="switchTab('fuelMaint', this)" id="navFuel" style="display:none;">⛽ የነዳጅ እና ጥገና አስተዳደር</button>
-            <button class="nav-item" onclick="switchTab('deptCreate', this)" id="navDeptCreate" style="display:none;"><span id="menuTextDeptCreate">📂 ዳይሬክቶሬት መፍጠሪያ (Admin)</span></button>
-            <button class="nav-item" onclick="switchTab('deptMgmt', this)" id="navDeptMgmt" style="display:none;"><span id="menuTextDeptMgmt">🏢 ዳይሬክቶሬቶች እና ኃላፊዎች ማዋቀሪያ (Admin)</span></button>
-            <button class="nav-item" onclick="switchTab('carMgmt', this)" id="navCarMgmt" style="display:none;">🚘 መኪና እና አሽከርካሪ (Admin)</button>
-            <button class="nav-item" onclick="switchTab('accMgmt', this)" id="navAccMgmt" style="display:none;">👤 አካውንት መፍጠሪያ (Admin)</button>
-            <button class="nav-item" onclick="switchTab('techSupportAdmin', this)" id="navTechSupportAdmin" style="display:none;">🛠️ የቴክኒክ ድጋፍ ጥያቄዎች (Admin)</button>
-            <button class="nav-item" onclick="switchTab('reportsMgmt', this)" id="navReports" style="display:none;">📈 ሪፖርቶች እና ማእከል (Admin)</button>
+            <button class="nav-item" onclick="switchTab('staffReq', this)" id="sidebarStaffReq">📋 የተሽከርካሪ
+                ጥያቄዎች</button>
+            <button class="nav-item" onclick="switchTab('deptApp', this)" id="navDeptApp" style="display:none;"><span
+                    id="menuTextDeptApp">✔️ የዳይሬክቶሬት ማጽደቂያ</span></button>
+            <button class="nav-item" onclick="switchTab('adminDisp', this)" id="navAdminDisp"
+                style="display:none;"><span id="menuTextAdminDisp">⚙️ የአድሚን ስምሪት</span></button>
+            <button class="nav-item" onclick="switchTab('driverAcc', this)" id="navDriverAcc" style="display:none;">🚗
+                የአሽከርካሪ ስምሪት ሁኔታ</button>
+            <button class="nav-item" onclick="switchTab('fuelMaint', this)" id="navFuel" style="display:none;">⛽ የነዳጅ እና
+                ጥገና አስተዳደር</button>
+            <button class="nav-item" onclick="switchTab('deptCreate', this)" id="navDeptCreate"
+                style="display:none;"><span id="menuTextDeptCreate">📂 ዳይሬክቶሬት መፍጠሪያ (Admin)</span></button>
+            <button class="nav-item" onclick="switchTab('deptMgmt', this)" id="navDeptMgmt" style="display:none;"><span
+                    id="menuTextDeptMgmt">🏢 ዳይሬክቶሬቶች እና ኃላፊዎች ማዋቀሪያ (Admin)</span></button>
+            <button class="nav-item" onclick="switchTab('carMgmt', this)" id="navCarMgmt" style="display:none;">🚘 መኪና
+                እና አሽከርካሪ (Admin)</button>
+            <button class="nav-item" onclick="switchTab('accMgmt', this)" id="navAccMgmt" style="display:none;">👤 አካውንት
+                መፍጠሪያ (Admin)</button>
+            <button class="nav-item" onclick="switchTab('techSupportAdmin', this)" id="navTechSupportAdmin"
+                style="display:none;">🛠️ የቴክኒክ ድጋፍ ጥያቄዎች (Admin)</button>
+            <button class="nav-item" onclick="switchTab('reportsMgmt', this)" id="navReports" style="display:none;">📈
+                ሪፖርቶች እና ማእከል (Admin)</button>
         </aside>
 
         <!-- Main Content Wrapper -->
@@ -65,16 +80,19 @@
                 <div>
                     <h1>🚗 E fleet - Command System</h1>
                 </div>
-                <div id="userInfo" style="font-size: 13px; color: #94a3b8; display: flex; align-items: center; gap: 10px;">
+                <div id="userInfo"
+                    style="font-size: 13px; color: #94a3b8; display: flex; align-items: center; gap: 10px;">
                     <span id="currentUserName">Admin User</span>
-                    <button class="btn-danger" onclick="handleLogout()" style="padding: 6px 12px; font-size: 11px;">ውጣ</button>
+                    <button class="btn-danger" onclick="handleLogout()"
+                        style="padding: 6px 12px; font-size: 11px;">ውጣ</button>
                 </div>
             </header>
 
             <!-- TAB 1: DASHBOARD -->
             <div id="tab-dashboard" class="card active-section">
                 <div class="hero-slider" id="heroSlider">
-                    <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80');">
+                    <div class="slide active"
+                        style="background-image: url('https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80');">
                         <div class="slide-content">
                             <h2>ዘመናዊ እና ቀልጣፋ ቁጥጥር</h2>
                             <p>በቴክኖሎጂ የታገዘ የድርጅት ተሽከርካሪ ስምሪት አስተዳደር</p>
@@ -342,5 +360,24 @@
     <!-- የጃቫስክሪፕት ፋይል ማገናኛ -->
     <script src="script.js"></script>
 </body>
+<!-- Rejection Reason Custom Modal -->
+<div id="rejectionModal"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 9999; align-items: center; justify-content: center;">
+    <div
+        style="background: #1a233a; padding: 25px; border-radius: 8px; width: 90%; max-width: 450px; border: 1px solid #2e3d63; color: white; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+        <h3 style="margin-top: 0; color: #ff4d4d; font-size: 1.2rem;">የውድቅ ማድረጊያ ምክንያት ያስገቡ</h3>
+        <p style="font-size: 0.9rem; color: #ccc; margin-bottom: 12px;">ጥያቄውን ውድቅ ለማድረግ ምክንያት መጻፍ ግዴታ ነው።</p>
+        <textarea id="rejectionReasonText" rows="4"
+            style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #2e3d63; background: #0f172a; color: white; resize: none; font-family: inherit; box-sizing: border-box;"
+            placeholder="ምክንያቱን እዚህ ይጻፉ..."></textarea>
+        <div style="margin-top: 15px; text-align: right;">
+            <button onclick="closeRejectionModal()"
+                style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin-right: 8px;">ተመለስ</button>
+            <button onclick="submitRejectionForce()"
+                style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">ውድቅ
+                አድርግ</button>
+        </div>
+    </div>
+</div>
 
 </html>
