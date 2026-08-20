@@ -318,14 +318,46 @@ async function registerSystemAccount() {
     const fullName = document.getElementById('newAccFullName').value.trim();
     const role = document.getElementById('newAccRole').value;
 
-    if (!email || !password || !fullName) { alert('እባክዎ መረጃዎችን ይሙሉ!'); return; }
+    if (!email || !password || !fullName) {
+        alert('እባክዎ መረጃዎችን በሙሉ ይሙሉ!');
+        return;
+    }
 
-    const { data, error } = await _supabase.auth.signUp({ email, password });
-    if (error) { alert('ስህተት: ' + error.message); return; }
+    // የይለፍ ቃል ቢያንስ 6 ፊደል መሆኑን ማረጋገጥ
+    if (password.length < 6) {
+        alert('የይለፍ ቃል ቢያንስ 6 ፊደላት/ቁጥሮች መሆን አለበት!');
+        return;
+    }
+
+    // አዲስ ተጠቃሚ በ Auth መፍጠር
+    const { data, error } = await _supabase.auth.signUp({
+        email: email,
+        password: password
+    });
+
+    if (error) {
+        alert('የመመዝገቢያ ስህተት: ' + error.message);
+        return;
+    }
 
     if (data.user) {
-        await _supabase.from('users').insert([{ user_id: data.user.id, full_name: fullName, username: email, role }]);
-        alert('አካውንት ተፈጥሯል!');
+        // በ users ሰንጠረዥ ውስጥ ፕሮፋይል ማስገባት
+        const { error: dbError } = await _supabase.from('users').insert([{
+            user_id: data.user.id,
+            full_name: fullName,
+            username: email,
+            role: role
+        }]);
+
+        if (dbError) {
+            alert('በ Database ላይ መመዝገብ አልተቻለም: ' + dbError.message);
+        } else {
+            alert('አካውንት በተሳካ ሁኔታ ተፈጥሯል!');
+            // ፎርሙን ማጽዳት
+            document.getElementById('newAccEmail').value = '';
+            document.getElementById('newAccPassword').value = '';
+            document.getElementById('newAccFullName').value = '';
+        }
     }
 }
 
