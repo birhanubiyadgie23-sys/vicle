@@ -1,6 +1,6 @@
 // --- Supabase ግንኙነት ማዋቀሪያ (የተስተካከለ - Anon Key) ---
 const SUPABASE_URL = 'https://hovkdxdcfwqxhkqlfmgx.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvdmtkeGRjZndxeGhrcWxmbWd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5NTU3NTksImV4cCI6MjEwMjUzMTc1OX0.Ljjcwo858v7zU1hTrbVSvPOXUiFplUVLJono8V3rpiA'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvdmtkeGRjZndxeGhrcWxmbWd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5NTU3NTksImV4cCI6MjEwMjUzMTc1OX0.Ljjcwo858v7zU1hTrbVSvPOXUiFplUVLJono8V3rpiA';
 
 const { createClient } = supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -31,7 +31,7 @@ async function handleLogin() {
 
 async function fetchUserProfile() {
     if (!currentUser) return;
-    const { data, error } = await _supabase.from('users').select('*').eq('user_id', currentUser.id).single();
+    const { data, error } = await _supabase.from('users').select('*').eq('user_id', currentUser.id).maybeSingle();
     if (data) {
         currentProfile = data;
     } else {
@@ -202,13 +202,13 @@ async function saveFuelMaintenance() {
 
     const driverName = (currentProfile && currentProfile.full_name) ? currentProfile.full_name : (currentUser ? currentUser.email : 'Unknown Driver');
 
-    const { error } = await _supabase.from('fuel_maintenance').insert([{ 
-        driver: driverName, 
-        car, 
-        type, 
-        value, 
-        note, 
-        status: 'Pending' 
+    const { error } = await _supabase.from('fuel_maintenance').insert([{
+        driver: driverName,
+        car,
+        type,
+        value,
+        note,
+        status: 'Pending'
     }]);
 
     if (error) {
