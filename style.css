@@ -1,0 +1,337 @@
+/* --- Global Styles & Resets --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #0f172a;
+    color: #f8fafc;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Login Overlay --- */
+#loginOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.login-card {
+    background: #1e293b;
+    padding: 30px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    border: 1px solid #334155;
+}
+
+/* --- App Layout --- */
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* --- Sidebar Navigation --- */
+aside#sidebarNav {
+    width: 260px;
+    background: #1e293b;
+    border-right: 1px solid #334155;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 10px;
+    gap: 8px;
+}
+
+.sidebar-brand {
+    font-size: 20px;
+    font-weight: bold;
+    color: #38bdf8;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #334155;
+}
+
+.nav-item {
+    background: transparent;
+    color: #94a3b8;
+    border: none;
+    padding: 12px 15px;
+    text-align: left;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-item:hover {
+    background: #334155;
+    color: #f8fafc;
+}
+
+.nav-item.active {
+    background: #2563eb;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* --- Main Content Area --- */
+.main-content {
+    flex: 1;
+    background: #0f172a;
+    padding: 25px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e293b;
+    padding: 15px 20px;
+    border-radius: 10px;
+    border: 1px solid #334155;
+}
+
+header h1 {
+    font-size: 18px;
+    color: #38bdf8;
+}
+
+/* --- Cards & Content Sections --- */
+.card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 20px;
+    display: none;
+}
+
+.card.active-section {
+    display: block;
+}
+
+.card h3 {
+    color: #f8fafc;
+    margin-bottom: 15px;
+    font-size: 16px;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 8px;
+}
+
+/* --- Form Inputs & Buttons --- */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px 12px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    color: #f8fafc;
+    font-size: 13px;
+    outline: none;
+}
+
+input:focus, select:focus {
+    border-color: #38bdf8;
+}
+
+button {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+.btn-success {
+    background: #10b981;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
+.btn-danger {
+    background: #ef4444;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+/* --- Data Tables --- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #334155;
+    font-size: 13px;
+}
+
+th {
+    background: #0f172a;
+    color: #38bdf8;
+    font-weight: 600;
+}
+
+tr:hover {
+    background: #283548;
+}
+
+/* --- Status Badges --- */
+.badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.badge-active {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.badge-garage {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+/* --- Dashboard Stats Grid --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.stat-card {
+    background: #0f172a;
+    border: 1px solid #334155;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #38bdf8;
+    margin-top: 5px;
+}
+
+/* --- Hero Banner Slider --- */
+.hero-slider {
+    width: 100%;
+    height: 180px;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.slide {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+}
+
+.slide-content {
+    background: linear-gradient(to top, rgba(15, 23, 42, 0.9), transparent);
+    width: 100%;
+    padding: 20px;
+}
+
+/* --- Popup Modal --- */
+.custom-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.custom-modal-content {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 20px;
+    width: 90%;
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* --- Footer --- */
+footer {
+    margin-top: auto;
+    padding-top: 15px;
+}
+
+.footer-banner-box {
+    background: #1e293b;
+    border: 1px solid #334155;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .app-layout {
+        flex-direction: column;
+    }
+    aside#sidebarNav {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #334155;
+    }
+}
