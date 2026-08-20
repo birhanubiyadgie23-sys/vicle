@@ -29,13 +29,33 @@ async function handleLogin() {
     initSession();
 }
 
+// 406 Error እንዳይፈጥር በጥንቃቄ የተስተካከለ የ Profile መፈለጊያ
 async function fetchUserProfile() {
     if (!currentUser) return;
-    const { data, error } = await _supabase.from('users').select('*').eq('user_id', currentUser.id).maybeSingle();
-    if (data) {
-        currentProfile = data;
+
+    // 406 Error ለማስቀረት array በመቀበል የመጀመሪያውን እንወስዳለን
+    const { data, error } = await _supabase
+        .from('users')
+        .select('*')
+        .eq('user_id', currentUser.id);
+
+    if (data && data.length > 0) {
+        currentProfile = data[0];
     } else {
-        currentProfile = { full_name: currentUser.email, role: 'staff', department: '' };
+        // ፕሮፋይል ካልተገኘ በኢሜይል ፈልጎ ማረጋገጥ
+        const { data: emailData } = await _supabase
+            .from('users')
+            .select('*')
+            .eq('username', currentUser.email);
+
+        if (emailData && emailData.length > 0) {
+            currentProfile = emailData[0];
+            // user_id ካልተያያዘ ማያያዝ
+            await _supabase.from('users').update({ user_id: currentUser.id }).eq('id', currentProfile.id);
+        } else {
+            // በጭራሽ ካልተገኘ ነባሪ ፕሮፋይል ማዘጋጀት
+            currentProfile = { full_name: currentUser.email, role: 'staff', department: '' };
+        }
     }
 }
 
