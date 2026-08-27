@@ -297,22 +297,40 @@
                 </table>
             </div>
 
-            <!-- TAB 10: ACCOUNT MGMT -->
-            <div id="tab-accMgmt" class="card">
-                <h3>አዲስ የዩዘር መለያ መፍጠሪያ (Supabase Auth Account)</h3>
-                <div class="form-grid">
-                    <input type="text" id="newAccFullName" placeholder="ሙሉ ስም">
-                    <input type="email" id="newAccEmail" placeholder="ኢሜይል (Email)">
-                    <input type="password" id="newAccPassword" placeholder="የሚስጥር ቁጥር (Password)">
-                    <select id="newAccRole">
-                        <option value="staff">መደበኛ ሰራተኛ (Staff)</option>
-                        <option value="dept">ዳይሬክተር (Department Head)</option>
-                        <option value="driver">አሽከርካሪ (Driver)</option>
-                        <option value="admin">አድሚን (Admin)</option>
-                    </select>
-                </div>
-                <button onclick="registerSystemAccount()">መለያ ፍጠር</button>
-            </div>
+        <!-- TAB 10: ACCOUNT MGMT -->
+<div id="tab-accMgmt" class="card">
+    <h3>👤 አዲስ የዩዘር መለያ መፍጠሪያ እና የአካውንቶች ዝርዝር</h3>
+    <div class="form-grid">
+        <input type="text" id="newAccFullName" placeholder="ሙሉ ስም">
+        <input type="email" id="newAccEmail" placeholder="ኢሜይል (Email)">
+        <input type="password" id="newAccPassword" placeholder="የሚስጥር ቁጥር (Password)">
+        <select id="newAccRole">
+            <option value="staff">መደበኛ ሰራተኛ (Staff)</option>
+            <option value="dept">ዳይሬክተር (Department Head)</option>
+            <option value="driver">አሽከርካሪ (Driver)</option>
+            <option value="admin">አድሚን (Admin)</option>
+        </select>
+    </div>
+    <button onclick="registerSystemAccount()">መለያ ፍጠር</button>
+
+    <!-- የተፈጠሩ አካውንቶች ዝርዝር ማሳያ ቴብል -->
+    <h4 style="margin-top: 25px; color: #60a5fa;">📋 በሲስተሙ ላይ ያሉ የተፈጠሩ አካውንቶች</h4>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ሙሉ ስም</th>
+                    <th>ኢሜይል</th>
+                    <th>ሚና (Role)</th>
+                    <th>እርምጃ</th>
+                </tr>
+            </thead>
+            <tbody id="registeredAccountsTable">
+                <!-- በ JavaScript መረጃው እዚህ ይገባል -->
+            </tbody>
+        </table>
+    </div>
+</div>
 
             <!-- TAB 11: TECH SUPPORT -->
             <div id="tab-techSupportAdmin" class="card">
