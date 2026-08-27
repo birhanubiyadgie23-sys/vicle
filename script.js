@@ -191,6 +191,7 @@ async function renderAllTables() {
     await renderAdminDepartmentListTable();
     await renderAdminCarsTable();
     await renderFuelMaintenanceTable();
+    await loadAllUsers(); // <--- ይሄ ተጨምሯል
     await refreshDashboardStats();
 }
 
