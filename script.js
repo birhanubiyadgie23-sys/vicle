@@ -129,12 +129,12 @@ async function initSession() {
 
 function applyRolePermissions() {
     const role = currentProfile ? currentProfile.role : '';
-    document.getElementById('navDeptApp').style.display = (role === 'dept' || role === 'admin') ? 'flex' : 'none';
+    document.getElementById('navDeptApp').style.display = (role === 'dept' || role === 'dept') ? 'flex' : 'none';
     document.getElementById('navAdminDisp').style.display = (role === 'admin') ? 'flex' : 'none';
     document.getElementById('navDriverAcc').style.display = (role === 'driver' || role === 'admin') ? 'flex' : 'none';
     document.getElementById('navFuel').style.display = (role === 'driver' || role === 'admin') ? 'flex' : 'none';
     document.getElementById('navDeptCreate').style.display = (role === 'admin') ? 'flex' : 'none';
-    document.getElementById('navDeptMgmt').style.display = (role === 'dept') ? 'flex' : 'none';
+    document.getElementById('navDeptMgmt').style.display = (role === 'admin') ? 'flex' : 'none';
     document.getElementById('navCarMgmt').style.display = (role === 'admin') ? 'flex' : 'none';
     document.getElementById('navAccMgmt').style.display = (role === 'admin') ? 'flex' : 'none';
     document.getElementById('navTechSupportAdmin').style.display = (role === 'admin') ? 'flex' : 'none';
