@@ -146,6 +146,11 @@ function switchTab(tabId, btnElement) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById('tab-' + tabId).classList.add('active-section');
     if (btnElement) btnElement.classList.add('active');
+
+    // አካውንት ማኔጅመንት ታብ ሲከፈት አካውንቶችን ይጫናል
+    if (tabId === 'accMgmt') {
+        loadAllUsers();
+    }
 }
 
 // --- Database Actions with Supabase ---
