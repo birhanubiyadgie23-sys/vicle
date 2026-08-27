@@ -1,3 +1,33 @@
+// የተፈጠሩ አካውንቶችን ከ Supabase/Database መጥራት
+async function loadAllUsers() {
+  const { data: users, error } = await supabase
+    .from('users') // ወይም የቴብልህ ስም 'profiles' / 'accounts' ከሆነ እሱን ተጠቀም
+    .select('*');
+
+  if (error) {
+    console.error('Error fetching users:', error);
+    return;
+  }
+
+  // HTML Table ላይ መረጃውን መሙላት
+  const userTableBody = document.getElementById('userTableBody');
+  userTableBody.innerHTML = ''; // የነበረውን ማፅዳት
+
+  users.forEach(user => {
+    const row = `
+      <tr>
+        <td>${user.full_name || user.email}</td>
+        <td>${user.role}</td>
+        <td>${user.department || '-'}</td>
+        <td><span class="badge">${user.status || 'Active'}</span></td>
+      </tr>
+    `;
+    userTableBody.innerHTML += row;
+  });
+}
+
+// ገጹ ሲከፈት Function-ኡ እንዲሰራ ማድረግ
+document.addEventListener('DOMContentLoaded', loadAllUsers);
 // --- Supabase ግንኙነት ማዋቀሪያ (የተስተካከለ - Anon Key) ---
 const SUPABASE_URL = 'https://hovkdxdcfwqxhkqlfmgx.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvdmtkeGRjZndxeGhrcWxmbWd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5NTU3NTksImV4cCI6MjEwMjUzMTc1OX0.Ljjcwo858v7zU1hTrbVSvPOXUiFplUVLJono8V3rpiA';
