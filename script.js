@@ -589,3 +589,56 @@ function openCustomModal(type) { document.getElementById('genericModal').style.d
 function closeGenericModal() { document.getElementById('genericModal').style.display = 'none'; }
 
 window.onload = function () { initSession(); };
+// --- የተፈጠሩ አካውንቶችን ከ Supabase መጥራት ---
+async function loadAllUsers() {
+    const tableBody = document.getElementById('registeredAccountsTable');
+    if (!tableBody) return;
+
+    // ከ Supabase 'users' ቴብል መረጃ መጠየቅ
+    const { data: users, error } = await _supabase
+        .from('users')
+        .select('*');
+
+    if (error) {
+        console.error('Error fetching users:', error);
+        tableBody.innerHTML = `<tr><td colspan="4" style="color:#ef4444; text-align:center;">መረጃውን ማምጣት አልተቻለም!</td></tr>`;
+        return;
+    }
+
+    tableBody.innerHTML = '';
+
+    if (!users || users.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">ምንም የተመዘገበ አካውንት አልተገኘም።</td></tr>`;
+        return;
+    }
+
+    users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${user.full_name || user.username || 'N/A'}</td>
+            <td>${user.username || user.email || 'N/A'}</td>
+            <td><span class="badge">${user.role || 'staff'}</span></td>
+            <td>
+                <button class="btn-danger" style="padding: 4px 8px; font-size: 11px;" onclick="deleteAccount('${user.id}')">ሰርዝ</button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+// አካውንት ከ Database ለመሰረዝ
+async function deleteAccount(id) {
+    if (!confirm('ይህንን አካውንት እርግጠኛ ሆነው መሰረዝ ይፈልጋሉ?')) return;
+
+    const { error } = await _supabase
+        .from('users')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
+        alert('ስህተት፦ አካውንቱን መሰረዝ አልተቻለም: ' + error.message);
+    } else {
+        alert('አካውንቱ በተሳካ ሁኔታ ተሰርዟል!');
+        loadAllUsers();
+    }
+}
