@@ -575,6 +575,7 @@ async function registerSystemAccount() {
             document.getElementById('newAccEmail').value = '';
             document.getElementById('newAccPassword').value = '';
             document.getElementById('newAccFullName').value = '';
+            loadAllUsers(); // <--- አዲሱ አካውንት ወዲያው ቴብሉ ላይ እንዲታይ ይጥራል
         }
     }
 }
