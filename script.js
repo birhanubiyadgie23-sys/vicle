@@ -1,32 +1,44 @@
-// የተፈጠሩ አካውንቶችን ከ Supabase/Database መጥራት
+// የተፈጠሩ አካውንቶችን ከ Supabase መጥራት
 async function loadAllUsers() {
+  // 1. በ HTML ላይ ባለው ID መሠረት tableBody ን መያዝ
+  const tableBody = document.getElementById('registeredAccountsTable');
+  if (!tableBody) return;
+
+  // 2. ከ Supabase መረጃውን መጥራት (የቴብልህ ስም 'profiles' ከሆነ 'users' የሚለውን በ 'profiles' ተካው)
   const { data: users, error } = await supabase
-    .from('users') // ወይም የቴብልህ ስም 'profiles' / 'accounts' ከሆነ እሱን ተጠቀም
+    .from('users') 
     .select('*');
 
   if (error) {
     console.error('Error fetching users:', error);
+    tableBody.innerHTML = `<tr><td colspan="4" style="color:#ef4444; text-align:center;">መረጃውን ማምጣት አልተቻለም!</td></tr>`;
     return;
   }
 
-  // HTML Table ላይ መረጃውን መሙላት
-  const userTableBody = document.getElementById('userTableBody');
-  userTableBody.innerHTML = ''; // የነበረውን ማፅዳት
+  tableBody.innerHTML = ''; // የነበረውን ማፅዳት
 
+  if (!users || users.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">ምንም የተመዘገበ አካውንት አልተገኘም።</td></tr>`;
+    return;
+  }
+
+  // 3. መረጃውን ወደ HTML Table ማስገባት
   users.forEach(user => {
     const row = `
       <tr>
-        <td>${user.full_name || user.email}</td>
-        <td>${user.role}</td>
-        <td>${user.department || '-'}</td>
-        <td><span class="badge">${user.status || 'Active'}</span></td>
+        <td>${user.full_name || user.username || 'N/A'}</td>
+        <td>${user.email || 'N/A'}</td>
+        <td><span class="badge">${user.role || 'staff'}</span></td>
+        <td>
+          <button class="btn-danger" style="padding: 4px 8px; font-size: 11px;" onclick="deleteAccount('${user.id}')">ሰርዝ</button>
+        </td>
       </tr>
     `;
-    userTableBody.innerHTML += row;
+    tableBody.innerHTML += row;
   });
 }
 
-// ገጹ ሲከፈት Function-ኡ እንዲሰራ ማድረግ
+// ገጹ ሲከፈት እንዲሰራ ማድረግ
 document.addEventListener('DOMContentLoaded', loadAllUsers);
 // --- Supabase ግንኙነት ማዋቀሪያ (የተስተካከለ - Anon Key) ---
 const SUPABASE_URL = 'https://hovkdxdcfwqxhkqlfmgx.supabase.co';
